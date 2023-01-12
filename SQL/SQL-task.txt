@@ -1,0 +1,139 @@
+-- Приведенные ниже запросы можно выполнить на ресурсе https://sqliteonline.com/
+-- во вкладке "PostgreSQL" (необходимо нажать "Click to connect").
+/*
+Примечание: в задании требуется учесть продажу товаров,
+которые поступили на склад в указанный период.
+За лучшее было бы учесть номер партии при продаже в таблице Sales, предварительно 
+присвоив его в таблице Arrivals или другим способом сопоставления (например, расширив схему БД),
+какие именно товары и из какой партии продаются.
+Но т.к. это учебная задача, приведенное решение ограничивается учетом
+списка (наименований) товаров, бывших в доступе на указанные даты.
+*/
+
+-- Удаление таблиц
+DROP TABLE IF EXISTS Arrivals, Sales, Products, Sellers;
+
+-- Создание таблиц
+CREATE TABLE Sellers (
+  ID BIGSERIAL PRIMARY KEY,
+  Name VARCHAR(50) NOT NULL,
+  Surname VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Products (
+  ID BIGSERIAL PRIMARY KEY,
+  Name VARCHAR(100) NOT NULL,
+  Price NUMERIC(15, 2) CHECK (Price > 0)
+);
+
+CREATE TABLE Arrivals (
+  ID BIGSERIAL PRIMARY KEY,
+  IDProd INTEGER REFERENCES Products(ID) NOT NULL,
+  Date TIMESTAMP NOT NULL DEFAULT TO_TIMESTAMP('2013-09-07 10:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+  Quantity NUMERIC(15, 3) CHECK (Quantity > 0)
+);
+
+CREATE TABLE Sales (
+  ID BIGSERIAL PRIMARY KEY,
+  IDSel INTEGER REFERENCES Sellers(ID) NOT NULL,
+  IDProd INTEGER REFERENCES Products(ID) NOT NULL,
+  Date TIMESTAMP NOT NULL DEFAULT TO_TIMESTAMP('2013-10-05 14:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+  Quantity NUMERIC(15, 3) CHECK (Quantity > 0)
+);
+
+
+-- Заполнение таблиц
+INSERT INTO Sellers (Name, Surname) VALUES ('Ivan', 'Ivanov');
+INSERT INTO Sellers (Name, Surname) VALUES ('Petr', 'Petrov');
+INSERT INTO Sellers (Name, Surname) VALUES ('Mark', 'Markov');
+
+--
+INSERT INTO Products (Name, Price) VALUES ('HDMI cable', 200.222);
+INSERT INTO Products (Name, Price) VALUES ('Phone charger', 3000.333);
+INSERT INTO Products (Name, Price) VALUES ('Audio interface', 25762.10);
+
+-- 
+INSERT INTO Arrivals (IDProd, Quantity, Date) values (1, 1000, TO_TIMESTAMP('2013-09-01 10:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Arrivals (IDProd, Quantity, Date) values (1, 1000, TO_TIMESTAMP('2013-09-07 10:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Arrivals (IDProd, Quantity, Date) values (1, 1000, TO_TIMESTAMP('2013-10-01 10:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+
+INSERT INTO Arrivals (IDProd, Quantity, Date) values (2, 500, TO_TIMESTAMP('2013-09-01 10:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Arrivals (IDProd, Quantity, Date) values (2, 500, TO_TIMESTAMP('2013-09-07 10:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Arrivals (IDProd, Quantity, Date) values (2, 500, TO_TIMESTAMP('2013-10-01 10:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+
+INSERT INTO Arrivals (IDProd, Quantity, Date) values (3, 270, TO_TIMESTAMP('2013-09-01 10:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Arrivals (IDProd, Quantity, Date) values (3, 270, TO_TIMESTAMP('2013-09-07 10:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Arrivals (IDProd, Quantity, Date) values (3, 270, TO_TIMESTAMP('2013-10-01 10:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+
+--
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 1, 10, TO_TIMESTAMP('2013-09-10 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 1, 20, TO_TIMESTAMP('2013-09-20 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 1, 50, TO_TIMESTAMP('2013-10-01 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 1, 100, TO_TIMESTAMP('2013-10-04 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 2, 5, TO_TIMESTAMP('2013-09-10 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 2, 10, TO_TIMESTAMP('2013-09-20 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 2, 20, TO_TIMESTAMP('2013-10-01 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 2, 50, TO_TIMESTAMP('2013-10-04 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 3, 1, TO_TIMESTAMP('2013-09-10 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 3, 1, TO_TIMESTAMP('2013-09-20 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 3, 2, TO_TIMESTAMP('2013-10-01 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (1, 3, 7, TO_TIMESTAMP('2013-10-04 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 1, 9, TO_TIMESTAMP('2013-09-11 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 1, 17, TO_TIMESTAMP('2013-09-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 1, 50, TO_TIMESTAMP('2013-10-02 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 1, 110, TO_TIMESTAMP('2013-10-05 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 2, 10, TO_TIMESTAMP('2013-09-11 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 2, 10, TO_TIMESTAMP('2013-09-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 2, 25, TO_TIMESTAMP('2013-10-02 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 2, 40, TO_TIMESTAMP('2013-10-05 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 3, 2, TO_TIMESTAMP('2013-09-11 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 3, 1, TO_TIMESTAMP('2013-09-21 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 3, 3, TO_TIMESTAMP('2013-10-02 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (2, 3, 2, TO_TIMESTAMP('2013-10-05 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 1, 70, TO_TIMESTAMP('2013-09-12 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 1, 10, TO_TIMESTAMP('2013-09-22 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 1, 48, TO_TIMESTAMP('2013-10-03 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 1, 120, TO_TIMESTAMP('2013-10-06 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 2, 8, TO_TIMESTAMP('2013-09-12 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 2, 15, TO_TIMESTAMP('2013-09-22 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 2, 70, TO_TIMESTAMP('2013-10-03 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 2, 43, TO_TIMESTAMP('2013-10-06 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 3, 2, TO_TIMESTAMP('2013-09-12 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 3, 1, TO_TIMESTAMP('2013-09-22 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 3, 5, TO_TIMESTAMP('2013-10-03 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO Sales (IDSel, IDProd, Quantity, Date) values (3, 3, 1, TO_TIMESTAMP('2013-10-06 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+--------------------
+
+/*
+1. Запрос, возвращающий объем продаж в количественном выражении в разрезе сотрудников за период с 01.10.2013 по 07.10.2013:
+- Фамилия и имя сотрудника;
+- Объем продаж сотрудника.
+Отсортировано по фамилии-имени сотрудника.
+*/
+
+SELECT e.Surname || ' ' || e.Name as SelName, SUM(s.Quantity) as TotalSold
+FROM Sales s
+JOIN Sellers e on e.ID = s.IDSel
+WHERE s.date BETWEEN TO_TIMESTAMP('2013-10-01', 'YYYY-MM-DD') and TO_TIMESTAMP('2013-10-07', 'YYYY-MM-DD')
+GROUP by e.ID, SelName
+ORDER BY SelName;
+
+/*
+2. Запрос, возвращающий процент объема продаж в разрезе сотрудников и продукции за период с 01.10.2013 по 07.10.2013;
+учитывается продукция, поступившая с 07.09.2013 по 07.10.2013.
+- Наименование продукции;
+- Фамилия и имя сотрудника;
+- Процент продаж сотрудником данного вида продукции (продажи сотрудника данной продукции/общее число продаж данной продукции).
+Отсортировано по наименованию продукции, фамилии-имени сотрудника.
+*/
+
+SELECT pr.Name AS ProdName, e.Surname || ' ' || e.Name as SelName, (100. * sum(s.Quantity)) / sum(sum(s.Quantity)) over (partition by pr.Name)  AS Percentage
+FROM Sales s
+JOIN Sellers e on e.ID = s.IDSel
+JOIN products pr ON pr.ID = s.IDProd
+WHERE s.date BETWEEN TO_TIMESTAMP('2013-10-01', 'YYYY-MM-DD') and TO_TIMESTAMP('2013-10-07', 'YYYY-MM-DD')
+AND s.IDProd IN (SELECT DISTINCT IDProd from arrivals WHERE date BETWEEN TO_TIMESTAMP('2013-09-07', 'YYYY-MM-DD') and TO_TIMESTAMP('2013-10-07', 'YYYY-MM-DD'))
+GROUP by pr.Name, SelName
+ORDER BY pr.Name, SelName;
